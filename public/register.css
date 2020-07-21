@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css?family=PT+Sans');
+
+a{
+  color: #333;
+}
+a:hover{
+  color: #124265;
+  text-decoration: none;
+}
+
+.card{
+  border: 0.40rem solid #f8f9fa;
+  top: 10%;
+}
+
+.form-control{
+  background-color: #f8f9fa;
+  padding: 20px;
+  padding: 25px 15px;
+  margin-bottom: 1.3rem;
+}
+
+.btn{
+  padding: 0.6rem 1.2rem;
+  background: #124265;
+  border: 2px solid #124265;
+}

@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+<body>
+<link rel="stylesheet" href="/register.css">
+	<%- include('partials/top') %>
+
+<div class="container">
+  <div class="row justify-content-center">
+  <div class="col-md-5">
+  <%- include('partials/messages') %>
+  
+   <div class="card">   
+     <h2 class="card-title text-center mt-4">Login Here</h2>
+      <div class="card-body py-md-4">
+       <form _lpchecked="1" method="POST">
+        <div class="form-group">
+             <input type="email" name="email" class="form-control" id="email" placeholder="Email">
+                            </div>
+                            
+                          
+   <div class="form-group">
+     <input type="password" name="password" class="form-control" id="password" placeholder="Password">
+   </div>
+   <button class="btn btn-primary btn-block mt-3">Login</button>
+
+
+       </form>
+     </div>
+  </div>
+</div>
+</div>
+</div>
+
+<%- include('partials/bottom') %>
