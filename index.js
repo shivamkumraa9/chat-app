@@ -56,5 +56,5 @@ app.use('/chat',require('./routes/chat.js'));
 
 require("./config/socket_handler.js")(io)
 
-const PORT = 80;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT,()=>console.log(`Listening on the port ${PORT}`))
