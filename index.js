@@ -26,8 +26,8 @@ app.use('/',require('./routes/main.js'));
 app.use('/users',require('./routes/auth.js'));
 app.use('/chat',require('./routes/chat.js'));
 
-require("./config/socket_handler.js")(io);
 io.use(require('./middlewares/auth_io.js'))
+require("./config/socket_handler.js")(io);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT,()=>console.log(`Listening on the port ${PORT}`));
