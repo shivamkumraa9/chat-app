@@ -42,7 +42,7 @@ const userList = document.getElementById('users');
 
   var socket = io();
 
-  socket.emit("Join Room",{username:'<%= username %>',room:'<%= room_id %>'})
+  socket.emit("Join Room",'<%= room_id %>')
   
 
   socket.on("Message",message => outputMessage(message))

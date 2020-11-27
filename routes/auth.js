@@ -1,110 +1,75 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const models = require('../config/user.js');
-const extra = require('../config/extra.js');
-
-const mongoose = require('mongoose');
 
 const User = models.User
 
-router.get("/login",extra.mustLoggedout,(req,res)=>{
-	res.render("login",{emailValue:'',logged:req.user ? true : false})
+router.get("/login",(req,res)=>{
+	res.render("login",{emailValue:''})
 })
 
 
-router.get("/register",extra.mustLoggedout,(req,res)=>{
-	res.render("register",{emailValue:'',nameValue:'',logged:req.user ? true : false})
+router.get("/register",(req,res)=>{
+	res.render("register",{emailValue:'',nameValue:''})
 })
 
 router.get("/logout",(req,res)=>{
-	req.logout();
+	res.clearCookie("auth")
 	res.redirect("/users/login")
 })
 
 
-
-
-router.post("/login",extra.mustLoggedout,(req,res,next) =>{
+router.post("/login",async (req,res) =>{
 	let {email,password} = req.body;
 	if (!(email && password)){
-		req.flash("failure","All fields are required")
-		res.render("login",{emailValue:email,logged:req.user ? true : false})
-	}else{
-		User.findOne({email:email}).then(user =>{
-			if (user){
-				bcrypt.compare(password,user.password,(err,result)=>{
-					if(result){
-						req.login(user,(err)=>{
-							if(err){return err}
-							else{
-								return res.redirect("/dashboard")
-							}
-						})
-
-					}else{
-						req.flash("failure","Invalid/Email password")
-						res.render("login",{emailValue:email,logged:req.user ? true : false})
-					}
-				})
-			}else{
-				req.flash("failure","Invalid/Email password")
-				res.render("login",{emailValue:email,logged:req.user ? true : false})
-			}
-		})
-		
+		res.locals.message = {type:"failure",msg:"All fields are required"}
+		return res.render("login",{emailValue:email})
 	}
+	let user = await User.findOne({email:email})
+	if (user){
+		result = await bcrypt.compare(password,user.password)
+		if(result){
+			let token = jwt.sign({ name: user.name,_id:user._id }, 'secret');
+			res.cookie('auth', token, {httpOnly:true})
+			return res.redirect("/dashboard")
+		}
+	}
+	res.locals.message = {type:"failure",msg:"Invalid/Email password"}
+	res.render("login",{emailValue:email})	
 });
 
 
 
-router.post("/register",extra.mustLoggedout,(req,res)=>{
+
+router.post("/register",async(req,res)=>{
 	let {name,email,password1,password2} = req.body;
-	// check if all fields are present
 	if (!(name && email && password1 && password2)){
-		req.flash("failure","All fields are required");
-		return res.render("register",{emailValue:email,nameValue:name,logged:req.user ? true : false})
+		res.locals.message = {type:"failure",msg:"All fields are required"}
+		return res.render("register")
 	}
 
 	if(password1 !== password2){
-		req.flash("failure","Passwords did not matched")
-		return res.render("register",{emailValue:email,nameValue:name,logged:req.user ? true : false})
+		res.locals.message = {type:"failure",msg:"Passwords did not matched"}
+		return res.render("register")
 	}
 
 	if (password1.length < 6){
-		req.flash("failure","Password should have the minimum length of 6")
-		 return res.render("register",{emailValue:email,nameValue:name,logged:req.user ? true : false})
+		res.locals.message = {type:"failure",msg:"Password should have the minimum length of 6"}
+		return res.render("register")
 	}
 
-
-	User.findOne({name:name}).then(user =>{
-		if (user){
-			req.flash("failure","name already exists")
-			return res.render("register",{emailValue:email,nameValue:name,logged:req.user ? true : false})
-		}else{
-			User.findOne({email:email}).then(user1 => {
-				if(user1){
-					req.flash("failure","email already exists")
-					return res.render("register",{emailValue:email,nameValue:name,logged:req.user ? true : false})						
-				}else{
-						bcrypt.hash(password1,10,(err,hash)=>{
-							if (err){
-								throw err;
-							}else{
-								let user = new User({name,email,password:hash});
-								user.save();
-								req.flash("success","Your account has been created!")
-								return res.redirect("/users/login")
-							}
-						})					
-				}
-
-			})
-
-
-		}
-	})
+	let user = await User.findOne({email:email})
+	if(user){
+		res.locals.message = {type:"failure",msg:"email already exists"}
+		return res.render("register")						
+	}
+	let hash = await bcrypt.hash(password1,10)
+	let newuser = new User({name,email,password:hash});
+	newuser.save();
+	res.redirect("/users/login")				
 })
 
 module.exports = router
